@@ -1,0 +1,223 @@
+import { Injectable } from '@angular/core';
+import {environment} from 'src/environments/environment';
+import { HttpClient,HttpHeaders } from "@angular/common/http";
+import { Observable, switchMap, map } from "rxjs";
+import{Usuario} from '../models/usuario.model';
+import{Producto} from '../models/producto.model';
+import { PaypalService } from './paypal.service';
+import { Paypal } from '../models/paypal.model';
+@Injectable({
+  providedIn: 'root'
+})
+export class VentaService {
+
+  public url;
+  rapidapiK = environment.rapidapiKey;
+  rapidapiH = environment.rapidapiHost;
+
+  user:Usuario;
+  producto:Producto;
+
+  constructor(
+    private _http : HttpClient,
+    private paypalService: PaypalService
+  ) {
+    this.url = environment.baseUrl;
+
+  }
+
+  get token():string{
+    return localStorage.getItem('token') || '';
+  }
+
+
+  get headers(){
+    return{
+      headers: {
+        'x-token': this.token
+      }
+    }
+  }
+
+  registro(data:any):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    // return this._http.post(this.url+'/ventas/venta/registro',data,{headers:headers});
+    return this._http.post(this.url+'/ventas/store',data,{headers:headers});
+  }
+
+  listar(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/'+id,{headers:headers});
+  }
+
+  listarporUser(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/user_order/'+id,{headers:headers});
+  }
+  listarporLocal(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/by_tiendaId/'+id,{headers:headers});
+  }
+
+
+  detalle(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_track/detalle/'+id,{headers:headers});
+  }
+
+  finalizar(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_finalizar/venta/'+id,{headers:headers});
+  }
+
+  update_envio(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_enviado/update/'+id,{headers:headers});
+  }
+
+  listarCancelacionporUser(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/user_cancelacion/'+id,{headers:headers});
+  }
+
+  evaluar_cancelacion(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/cancelacion_evaluar/venta/'+id,{headers:headers});
+  }
+
+  reembolsar(id:string,idticket:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/cancelacion_send/reembolsar/'+id+'/'+idticket,{headers:headers});
+  }
+
+
+  cancelar(data:any):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.post(this.url+'/ventas/cancelacion_send/cancelar',data,{headers:headers});
+  }
+
+  denegar(id:string,idticket:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/cancelacion_send/denegar/'+id+'/'+idticket,{headers:headers});
+  }
+
+  listar_cancelacion(wr:any):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/get_cancelacion_admin/data/'+wr,{headers:headers});
+  }
+
+  get_cancelacion(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/get_one_cancelacion_admin/one/'+id,{headers:headers});
+  }
+  get_year(year:number):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_data/year/'+year,{headers:headers});
+  }
+  get_year_bylocal(year:number, id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_data/yearlocal/'+id+'/'+year,{headers:headers});
+  }
+
+  get_token(tiendaId: string):Observable<any>{
+    return this.paypalService.getPaypalByTiendaId(tiendaId).pipe(
+      switchMap(paypals => {
+        if (!paypals || paypals.length === 0) {
+          throw new Error('No PayPal configuration found for this tienda');
+        }
+        const paypal = paypals[0];
+        const auth = btoa(`${paypal.clientIdPaypal}:${paypal.clientSecret}`);
+        const headers = new HttpHeaders({
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${auth}`,
+        });
+        return this._http.post('https://api.sandbox.paypal.com/v1/oauth2/token', 'grant_type=client_credentials', { headers }).pipe(
+          map((resp: any) => resp.access_token)
+        );
+      })
+    );
+  }
+
+  set_reembolso(token:string,id:string):Observable<any>{
+    let headers = new HttpHeaders({
+      'Content-Type':'application/json',
+      'Authorization': 'Bearer ' + token,
+    });
+    return this._http.post('https://api.sandbox.paypal.com/v1/payments/capture/'+id+'/refund',{},{headers:headers});
+  }
+
+  
+
+  get_cancelacion_venta(id:string):Observable<any>{
+
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/cancelacion_venta/obtener_data/'+id,{headers:headers});
+  }
+
+  evaluar_venta_user(user:any,producto:any):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/evaluar_venta/data/'+user+'/'+producto,{headers:headers});
+  }
+
+  get_data_venta_admin(search:any,orden:any,tipo:any):Observable<any>{
+
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_admin/listar/'+search+'/'+orden+'/'+tipo,{headers:headers});
+  }
+
+  get_data_dashboard():Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_data/dashboard',{headers:headers});
+  }
+  get_data_dashboardLocal(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_data/dashboard/local/'+id,{headers:headers});
+  }
+
+  get_detalle_hoy():Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_data/detalles/hoy',{headers:headers});
+  }
+  get_detalle_hoyLocal(id:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_data/detalles/hoy/local/'+id,{headers:headers});
+  }
+
+  init_data_admin():Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_admin_init/init_data',{headers:headers});
+  }
+  init_data_adminLocal(localid:string):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.get(this.url+'/ventas/venta_admin_init/init_data_local/'+localid,{headers:headers});
+  }
+
+  //tracking
+
+  set_track(id:string,data:any):Observable<any>{
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+    return this._http.post(this.url+'/ventas/venta_track/set/'+id,data,{headers:headers});
+  }
+
+  track(number:any){
+    let headers = new HttpHeaders()
+    .set('x-rapidapi-host', this.rapidapiH)
+    .set("x-rapidapi-key", this.rapidapiK)
+    .set("useQueryString", "true");
+    return this._http.get('https://apidojo-17track-v1.p.rapidapi.com/track?timeZoneOffset=0&codes='+number,{headers:headers});
+  }
+
+  enviarFacturaCliente(pdf:any, venta:any){
+    // Convertir el PDF a Blob
+    const pdfBlob = pdf.output('blob');
+
+    const formData = new FormData();
+    formData.append('facturacliente', pdfBlob, `${venta._id}.pdf`);
+    formData.append('nombrecliente',venta.user.first_name + ' ' + venta.user.last_name);
+    formData.append('emailcliente',venta.user.email);
+    formData.append('monto',venta.total_pagado);
+
+    return this._http.post<any>(`${this.url}/ventas/enviar_factura`,formData);
+  }
+}

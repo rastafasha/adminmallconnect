@@ -1,0 +1,77 @@
+<div class="row animated fadeIn fast">
+    <div class="col-12">
+        <app-search [query]="query" [modelo]="marca" [colleccionName]="marcas"
+[colleccion]="'marcas'" (searchEvent)="handleSearchEvent($event)" (resetEvent)="PageSize()"></app-search>
+       
+    </div>
+</div>
+
+<app-skeleton-loader *ngIf="cargando" [rows]="1" [columns]="3"></app-skeleton-loader>
+<app-skeleton-loader *ngIf="cargando" [rows]="4" [columns]="4"></app-skeleton-loader>
+
+<div class="row" *ngIf="!cargando">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-11">
+                        <h4 class="card-title">Marcas: ({{ marcas.length}})</h4>
+                        <h6 class="card-subtitle">Marcas registrados en la app</h6>
+                    </div>
+                    <div class="col-1">
+                        <div class="text-right">
+                            <button (click)="openEditModal()" class="btn btn-outline-success" data-toggle="tooltip"
+                                data-original-title="Edit" data-bs-toggle="modal" data-bs-target="#editMarca">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <hr>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>Nombre</th>
+                                <th>Creado</th>
+                                <th class="text-nowrap">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let marca of marcas |  paginate: { itemsPerPage: count, currentPage: p } | orderBy:'createdAt, desc'">
+                                <td class="text-center">
+                                    <img (click)="onEditProject(page)" data-bs-toggle="modal"
+                                        data-bs-target="#editPage" [src]="marca.img | imagenPipe: 'marcas'" class="img-responsive avatar" alt="{{marca.nombre}}">
+                                </td>
+                                <td>
+                                    {{marca.nombre}}
+                                </td>
+                                <td>{{ marca.createdAt | date:'MMM d, y' }}</td>
+                                <td class="text-nowrap text-center">
+                                   
+                                     <button class="btn btn-outline-success" data-toggle="tooltip"
+                                        data-original-title="Edit" (click)="onEditProject(marca)" data-bs-toggle="modal"
+                                        data-bs-target="#editMarca">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    &nbsp;
+                                    <button (click)="eliminarMarca(marca)" class="btn btn-outline-danger"
+                                        data-toggle="tooltip" data-original-title="Borrar">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <pagination-controls (pageChange)="p = $event"></pagination-controls>
+            </div>
+        </div>
+    </div>
+</div>
+<app-marca-edit (refreshMarcasList)="loadMarcas()" [marcaSeleccionada]="marcaSeleccionada" (closeModal)="onClose()"
+    #editMarca></app-marca-edit>

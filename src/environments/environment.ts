@@ -1,0 +1,22 @@
+// This file can be replaced during build by using the `fileReplacements` array.
+// `ng build` replaces `environment.ts` with `environment.prod.ts`.
+// The list of file replacements can be found in `angular.json`.
+
+export const environment = {
+  production: false,
+  //local
+  baseUrl: 'http://localhost:3000/api',
+  mediaUrl: 'http://localhost:3000/api/uploads',
+  soketServer : 'http://localhost:3000',
+
+   //remoto vercel
+  // baseUrl: 'https://back-zlipmenu.onrender.com/api',
+  // mediaUrl: 'https://back-zlipmenu.onrender.com/api/uploads',
+  // soketServer: 'https://back-zlipmenu.onrender.com',
+  mediaUrlRemoto: 'https://res.cloudinary.com/dmv6aukai/image/upload/v1741218430/zlipmenu',
+  //plugins
+  rapidapiKey: 'a7036a3222mshc2920e679cd1cafp141e56jsn81cbe707ac15',
+  rapidapiHost: 'apidojo-17track-v1.p.rapidapi.com',
+  clientIdGoogle: '291137676127-svvuuca518djs47q2v78se9q6iggi4nq.apps.googleusercontent.com',
+  
+};

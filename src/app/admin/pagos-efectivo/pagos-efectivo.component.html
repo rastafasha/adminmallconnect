@@ -1,0 +1,57 @@
+<div class="row animated fadeIn fast">
+    <div class="col-12">
+        <app-search [query]="query" [modelo]="pagoefectivo" [colleccionName]="pagoefectivos"
+ [colleccion]="'pagoefectivos'" (searchEvent)="handleSearchEvent($event)" (resetEvent)="PageSize()"></app-search>
+       
+    </div>
+</div>
+<div class="container">
+    <app-skeleton-loader *ngIf="cargando" [rows]="1" [columns]="3"></app-skeleton-loader>
+<app-skeleton-loader *ngIf="cargando" [rows]="2" [columns]="2"></app-skeleton-loader>
+    <div class="row" *ngIf="!cargando">
+        <div class="col">
+
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Nombre y Apellido</th>
+                                    <th>Monto</th>
+                                    <th>Teléfono</th>
+                                    <th *ngIf="user.role==='SUPERADMIN'">Local</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let pago of pagoefectivos | orderBy:'createdAt, desc'; let i=index ">
+                                    <td>{{i}}</td>
+                                    <td>{{pago.name_person}}</td>
+                                    <td>{{pago.amount|currency}}</td>
+                                    <td>{{pago.phone}}</td>
+                                    <td *ngIf="user.role==='SUPERADMIN'">
+                                    {{pago.local?.nombre | date}}
+                                </td>
+                                    <td>{{pago.paymentday | date : "shortDate"}}</td>
+                                </tr>
+                                <tr *ngIf="pagoefectivos.length<=0">
+                                    <td colspan="5">
+                                        <div class="alert alert-danger">
+                                            No hay pagos en efectivo registrados
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<app-modalinfo-pago-efectivo></app-modalinfo-pago-efectivo>

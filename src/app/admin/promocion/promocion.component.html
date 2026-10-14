@@ -1,0 +1,137 @@
+<div class="row animated fadeIn fast">
+    <div class="col-12">
+        <app-search [query]="query" [modelo]="promocion" [colleccionName]="promocions"
+[colleccion]="'promocions'" (searchEvent)="handleSearchEvent($event)" (resetEvent)="PageSize()"></app-search>
+    </div>
+</div>
+<app-skeleton-loader *ngIf="cargando" [rows]="1" [columns]="3"></app-skeleton-loader>
+<app-skeleton-loader *ngIf="cargando" [rows]="4" [columns]="8"></app-skeleton-loader>
+
+
+<div class="row" *ngIf="!cargando">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-11">
+                        <h4 class="card-title">Promocion: ({{ promocions.length}})</h4>
+                        <h6 class="card-subtitle">Promocion registrados en la app</h6>
+                    </div>
+                    <div class="col-1">
+                        <div class="text-right">
+                          <button (click)="openEditModal()" class="btn btn-outline-success" data-toggle="tooltip"
+                                data-original-title="Edit" data-bs-toggle="modal" data-bs-target="#editPromocion">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <hr>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>Nombre</th>
+                                <th>Status</th>
+                                <th>Activar</th>
+                                <th>Finaliza</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                                <th class="text-nowrap">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let promocion of promocions |  paginate: { itemsPerPage: count, currentPage: p }">
+                                <td class="text-center">
+                                    <img (click)="onEditProject(promocion)" data-bs-toggle="modal"
+                                        data-bs-target="#editPromocion" [src]="promocion.img | imagenPipe: 'promocions'" class="img-responsive avatar" alt="{{promocion.producto_title}}">
+                                </td>
+                                <td>
+                                    {{promocion.producto_title}}
+                                </td>
+                                <td>
+                                    <div class="font-size-sm mb-4">
+                                        <span class="badge badge-danger badge-shadow" *ngIf="promocion.estado == false">{{promocion.estado}}</span>
+                                        <span class="badge badge-success badge-shadow" *ngIf="promocion.estado == true">{{promocion.estado}}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-accent" *ngIf="promocion.estado == false" data-bs-toggle="modal" [attr.data-bs-target]="'#activar-'+promocion._id">
+                                        <span class="czi-check"></span> Activar
+                                    </button>
+
+                                    <div class="modal fade" [attr.id]="'activar-'+promocion._id" tabindex="-1"   aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" >
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title">Confirmación</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="font-size-sm">Al aceptar, estás confirmando que el promocion fué editado correctamente.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">Cerrar</button>
+                                                    <button class="btn btn-primary btn-shadow btn-sm" type="button" (click)="activar(promocion._id)">Aceptar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary" *ngIf="promocion.estado == true" data-bs-toggle="modal" [attr.data-bs-target]="'#desactivar-'+promocion._id"><span class="czi-close"></span> Desactivar</button>
+                                    <div class="modal fade" [attr.id]="'desactivar-'+promocion._id" tabindex="-1"   aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" >
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title">Confirmación</h4>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="font-size-sm">Al aceptar el promocion, no será visible en la tienda.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">Cerrar</button>
+                                                    <button class="btn btn-primary btn-shadow btn-sm" type="button" (click)="desactivar(promocion._id)">Aceptar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                
+                                <td>
+                                    {{promocion.end}}
+                                </td>
+                                <td>
+                                    {{promocion.createdAt | date:'mediumDate'}}
+                                </td>
+                                <td>
+                                    {{promocion.updatedAt | date:'mediumDate'}}
+                                </td>
+                                <td class="text-nowrap text-center">
+                                    <button class="btn btn-outline-success" data-toggle="tooltip"
+                                        data-original-title="Edit" (click)="onEditProject(promocion)" data-bs-toggle="modal"
+                                        data-bs-target="#editPromocion">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    &nbsp;
+                                    <button (click)="eliminarPromocion(promocion)" class="btn btn-outline-danger"
+                                        data-toggle="tooltip" data-original-title="Borrar">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <pagination-controls (pageChange)="p = $event"></pagination-controls>
+            </div>
+        </div>
+    </div>
+</div>
+<app-promoedit (refreshPromoList)="loadPromocions()" [promocionSeleccionado]="promocionSeleccionado" (closeModal)="onClose()"
+    #editPromocion></app-promoedit>
